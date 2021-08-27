@@ -13,7 +13,7 @@ browser = webdriver.Chrome("C:\\bin\\chromedriver.exe")
 
 
 """
-Logs in to Sakai through the guest route
+Logs in to Sakai through the guest route.
 """
 def login(browser):
    

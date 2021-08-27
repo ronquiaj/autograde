@@ -8,10 +8,17 @@ load_dotenv()
 
 EMAIL = os.getenv("EMAIL")
 PASSWORD = os.getenv("PASSWORD")
+PATH = os.getenv("ASSIGNMENTS_PATH")
 
 assignment_num = input("Enter an assignment number: ")
 
-browser = webdriver.Chrome("C:\\bin\\chromedriver.exe")
+# Configure download path
+chromeOptions = webdriver.ChromeOptions()
+chromeOptions.add_argument("--start-maximized")
+prefs = {"download.default_directory" : PATH}
+chromeOptions.add_experimental_option("prefs", prefs)
+
+browser = webdriver.Chrome("C:\\bin\\chromedriver.exe", options=chromeOptions)
 
 """
 Function which goes to and logs in to Zybooks with provided credentials
