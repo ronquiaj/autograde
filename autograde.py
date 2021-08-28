@@ -3,6 +3,7 @@ from selenium import webdriver
 import os
 from dotenv import load_dotenv
 from functions import click_in_dropdown 
+from read_csv import get_grades
 
 load_dotenv()
 
@@ -80,6 +81,8 @@ time.sleep(2)
 configure_dropdowns(browser)
 time.sleep(2)
 download_csv(browser)
+time.sleep(3)
+print(get_grades(assignment_num))
 
 
 
