@@ -32,7 +32,9 @@ def get_grades(assignment_num):
         datareader = csv.reader(csvfile)
         for row in datareader:
             if row[0] == "Last name": continue # Skip the first headers
-            full_name = row[0] + ", " + row[1]
+            last_name = row[0].lower()
+            # first_name = row[1]
+            full_name = last_name
             students_and_grades[full_name] = row[6]
 
     return students_and_grades

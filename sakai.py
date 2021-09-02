@@ -9,18 +9,16 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
 
 load_dotenv()
-SAKAI_USERNAME = os.getenv("SAKAI_USERNAME")
-SAKAI_PASSWORD = os.getenv("SAKAI_PASSWORD")
 
-desired_class = input("Enter the name of the class you'd like to click on: ")
-chromeOptions = webdriver.ChromeOptions()
-chromeOptions.add_argument("--start-maximized")
-browser = webdriver.Chrome("C:\\bin\\chromedriver.exe", options=chromeOptions)
+# desired_class = input("Enter the name of the class you'd like to click on: ")
+# chromeOptions = webdriver.ChromeOptions()
+# chromeOptions.add_argument("--start-maximized")
+# browser = webdriver.Chrome("C:\\bin\\chromedriver.exe", options=chromeOptions)
 
 """
 Logs in to Sakai through the guest route.
 """
-def login(browser):
+def login(browser, USERNAME, PASSWORD):
    
     browser.get("https://sakai.plu.edu/portal")
 
@@ -33,8 +31,8 @@ def login(browser):
     password = browser.find_element_by_id("pw")
     submit_login_button = browser.find_element_by_id("submit")
 
-    username.send_keys(SAKAI_USERNAME)
-    password.send_keys(SAKAI_PASSWORD)
+    username.send_keys(USERNAME)
+    password.send_keys(PASSWORD)
     submit_login_button.click()
 
 """
@@ -94,35 +92,44 @@ def get_assignment_index(browser, assignment_num):
 """
 Using the found assignment index, finds the column to grade each student row, and puts in the grade from the provided dictionary
 """
-def grade_students(browser, assignment_num):
+def grade_students(browser, assignment_num, students_to_grades):
     assignment_index = get_assignment_index(browser, assignment_num)
     rows = browser.find_elements_by_css_selector("tr")
     for row in rows:
         columns = row.find_elements_by_css_selector("div.relative > span.gb-value")
         try:
             if (len(columns) > 0):
-                first_name = row.find_element_by_class_name("gb-first-name").text
+                # first_name = row.find_element_by_class_name("gb-first-name").text
                 last_name = row.find_element_by_class_name("gb-last-name").text
-                print(last_name, ",", first_name)
+                full_name = last_name.lower()
+                student_grade = 0
+                print(full_name)
+                try:
+                    student_grade = students_to_grades[full_name]
+                except KeyError:
+                    print("Descrepancy for student", full_name, "- Student most likely has name that differs from Sakai to Zybooks")
+                    continue
+                print(full_name, ":", student_grade)
                 grade_cell = columns[assignment_index + 1]
-                # ActionChains(browser).click(grade_cell).send_keys("100").send_keys(Keys.ENTER).perform()
-               
-           
+                ActionChains(browser).click(grade_cell).send_keys(student_grade).send_keys(Keys.ENTER).perform()
+                time.sleep(1)
         except IndexError:
             break
     print("Done")
         
-def grade(browser, assignment_num):
-    login(browser)
+def grade(browser, desired_class, assignment_num, students_to_grades):
+    SAKAI_USERNAME = os.getenv("SAKAI_USERNAME")
+    SAKAI_PASSWORD = os.getenv("SAKAI_PASSWORD")
+    login(browser, SAKAI_USERNAME, SAKAI_PASSWORD)
     iterate_through_tabs_and_click(browser, desired_class)
     time.sleep(2)
     click_on_gradebook(browser)
     time.sleep(2)
     filter(browser)
     time.sleep(2)
-    grade_students(browser, assignment_num)
+    grade_students(browser, assignment_num, students_to_grades)
 
-grade(browser, 10)
+
 
 
 

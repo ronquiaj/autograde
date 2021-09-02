@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 from functions import click_in_dropdown 
 from read_csv import get_grades
+from sakai import grade
 
 load_dotenv()
 
@@ -11,6 +12,7 @@ EMAIL = os.getenv("EMAIL")
 PASSWORD = os.getenv("PASSWORD")
 PATH = os.getenv("ASSIGNMENTS_PATH")
 
+desired_class = input("Enter the name of the class you'd like to click on: ")
 assignment_num = input("Enter an assignment number: ")
 
 # Configure download path
@@ -75,23 +77,17 @@ def download_csv(browser):
             break
 
 login_to_zybooks(browser)
-time.sleep(2)
+time.sleep(3)
 navigate_to_dropdown_window(browser)
-time.sleep(2)
+time.sleep(3)
 configure_dropdowns(browser)
-time.sleep(2)
+time.sleep(3)
 download_csv(browser)
 time.sleep(3)
-print(get_grades(assignment_num))
-
-
-
-
-
-
-
-
-
+students_to_grades = get_grades(assignment_num)
+print(students_to_grades)
+time.sleep(3)
+grade(browser, desired_class, assignment_num, students_to_grades)
 
 time.sleep(100000)
 
