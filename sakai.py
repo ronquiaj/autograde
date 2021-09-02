@@ -49,11 +49,17 @@ def iterate_through_tabs_and_click(browser, desired_class):
             tab.click()
             break
 
+"""
+Clicks on the gradebook tab on Sakai
+"""
 def click_on_gradebook(browser):
     tab = browser.find_element_by_class_name("icon-sakai--sakai-gradebookng")
     tab.click()
-    
-def iterate_through_students(browser, assignment_num):
+
+"""
+Filters out anything that isn't assignment related
+"""
+def filter(browser):
     view_columns_button = browser.find_element_by_id("toggleGradeItemsToolbarItem")
     view_columns_button.click()
     
@@ -64,15 +70,15 @@ def iterate_through_students(browser, assignment_num):
     for filter_item in filter_items:
         if "Assign" in filter_item.text:
             filter_item.click()
-    
     gradeTable = browser.find_element_by_id("gradeTable")
     gradeTable.click()
-    
-    browser.execute_script("document.querySelector('.wtHolder').scrollBy(2000, 1000)")
 
-    time.sleep(2)
+"""
+Function which iterates through the assignment headers, and returns the index of the assignment we want to grade for each student
+"""
+def get_assignment_index(browser, assignment_num):
+    browser.execute_script("document.querySelector('.wtHolder').scrollBy(2000, 1000)") # Used so we can load all of the table data
     column_headers = browser.find_elements_by_class_name("gb-title")
-    time.sleep(2)
     assignment_index = 0
     cur_index = 0
     for column_header in column_headers:
@@ -83,36 +89,40 @@ def iterate_through_students(browser, assignment_num):
                 break
             else:
                 cur_index += 1
-       
+    return assignment_index
 
+"""
+Using the found assignment index, finds the column to grade each student row, and puts in the grade from the provided dictionary
+"""
+def grade_students(browser, assignment_num):
+    assignment_index = get_assignment_index(browser, assignment_num)
     rows = browser.find_elements_by_css_selector("tr")
-    time.sleep(2)
-    c = 0
     for row in rows:
         columns = row.find_elements_by_css_selector("div.relative > span.gb-value")
         try:
             if (len(columns) > 0):
+                first_name = row.find_element_by_class_name("gb-first-name").text
+                last_name = row.find_element_by_class_name("gb-last-name").text
+                print(last_name, ",", first_name)
                 grade_cell = columns[assignment_index + 1]
-                print("Text:", grade_cell.text, ", Displayed:", grade_cell.is_displayed(), ", Enabled:", grade_cell.is_enabled())
-                # ActionChains(browser).move_to_element(grade_cell).perform()
-                ActionChains(browser).move_to_element(grade_cell).click(grade_cell).send_keys("100").send_keys(Keys.ENTER).perform()
-                if (c == 5):
-                  break
-                c += 1
+                # ActionChains(browser).click(grade_cell).send_keys("100").send_keys(Keys.ENTER).perform()
+               
            
         except IndexError:
             break
     print("Done")
         
+def grade(browser, assignment_num):
+    login(browser)
+    iterate_through_tabs_and_click(browser, desired_class)
+    time.sleep(2)
+    click_on_gradebook(browser)
+    time.sleep(2)
+    filter(browser)
+    time.sleep(2)
+    grade_students(browser, assignment_num)
 
-login(browser)
-iterate_through_tabs_and_click(browser, desired_class)
-time.sleep(2)
-click_on_gradebook(browser)
-time.sleep(2)
-
-iterate_through_students(browser, 2)
-time.sleep(10000)
+grade(browser, 10)
 
 
 
