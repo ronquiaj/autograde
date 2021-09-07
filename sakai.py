@@ -51,9 +51,11 @@ def iterate_through_tabs_and_click(browser, desired_class):
 Clicks on the gradebook tab on Sakai
 """
 def click_on_gradebook(browser):
-    tab = browser.find_element_by_class_name("icon-sakai--sakai-gradebookng")
-    tab.click()
-
+    browser.execute_script("window.scrollBy(3000, 1000)") # Used so we can load all of the table data
+    time.sleep(2)
+    tab = browser.find_element_by_xpath("/html/body/div[2]/div[10]/div[1]/div/nav/ul/li[17]/a/span[1]")
+    ActionChains(browser).move_to_element(tab).click(tab).perform()
+    
 """
 Filters out anything that isn't assignment related
 """
