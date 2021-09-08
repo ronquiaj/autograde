@@ -19,8 +19,6 @@ def get_assignment_path(assignment_num):
             return assignment
     raise ValueError("Assignment was not found, please try again")
             
-    
-
 """
 Given an assignment number, looks through our assignments folder and finds the corresponding csv. Builds an object containing students mapped to their grades for that week
 """

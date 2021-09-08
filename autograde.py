@@ -1,6 +1,7 @@
 import time
 from selenium import webdriver
 import os
+import sys
 from dotenv import load_dotenv
 from functions import click_in_dropdown 
 from read_csv import get_grades
@@ -12,8 +13,8 @@ EMAIL = os.getenv("EMAIL")
 PASSWORD = os.getenv("PASSWORD")
 PATH = os.getenv("ASSIGNMENTS_PATH")
 
-desired_class = input("Enter the name of the class you'd like to click on: ")
-assignment_num = input("Enter an assignment number: ")
+desired_class = sys.argv[1]
+assignment_num = sys.argv[2]
 
 # Configure download path
 chromeOptions = webdriver.ChromeOptions()
@@ -46,7 +47,7 @@ def navigate_to_dropdown_window(browser):
     assignments_tab = browser.find_elements_by_class_name("full-tab")[-1]
     assignments_tab.click()
     time.sleep(2)
-    report_button = browser.find_element_by_xpath('//*[@id="ember176"]/div[1]/div[2]/button')
+    report_button = browser.find_element_by_xpath('/html/body/div[3]/div/div[2]/section[2]/div/div[1]/div[2]/button')
     report_button.click()
 
 """
