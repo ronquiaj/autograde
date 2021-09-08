@@ -15,6 +15,7 @@ PATH = os.getenv("ASSIGNMENTS_PATH")
 
 desired_class = sys.argv[1]
 assignment_num = sys.argv[2]
+zybooks_link = sys.argv[3]
 
 # Configure download path
 chromeOptions = webdriver.ChromeOptions()
@@ -42,7 +43,7 @@ def login_to_zybooks(browser):
 Goes to the assignments tab, clicks on the report button
 """
 def navigate_to_dropdown_window(browser):
-    browser.get("https://learn.zybooks.com/zybook/PLUCSCI144CaoSpring2021")
+    browser.get(zybooks_link)
     time.sleep(2)
     assignments_tab = browser.find_elements_by_class_name("full-tab")[-1]
     assignments_tab.click()
