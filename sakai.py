@@ -1,12 +1,13 @@
 
 
 import time
-from selenium import webdriver
 import os
 from dotenv import load_dotenv
 import re
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.common.exceptions import NoSuchElementException, StaleElementReferenceException
+from termcolor import colored
 
 load_dotenv()
 
@@ -52,9 +53,11 @@ Clicks on the gradebook tab on Sakai
 """
 def click_on_gradebook(browser):
     browser.execute_script("window.scrollBy(3000, 1000)") # Used so we can load all of the table data
-    time.sleep(2)
-    tab = browser.find_element_by_xpath("/html/body/div[2]/div[10]/div[1]/div/nav/ul/li[17]/a/span[1]")
-    ActionChains(browser).move_to_element(tab).click(tab).perform()
+    tabs = browser.find_elements_by_class_name("Mrphs-toolsNav__menuitem--link")
+    for tab in tabs:
+        if "Gradebook" in tab.get_attribute("title"):
+            tab.click()
+            break
     
 """
 Filters out anything that isn't assignment related
@@ -97,27 +100,60 @@ Using the found assignment index, finds the column to grade each student row, an
 def grade_students(browser, assignment_num, students_to_grades):
     assignment_index = get_assignment_index(browser, assignment_num)
     rows = browser.find_elements_by_css_selector("tr")
-    for row in rows:
-        columns = row.find_elements_by_css_selector("div.relative > span.gb-value")
-        try:
-            if (len(columns) > 0):
-                # first_name = row.find_element_by_class_name("gb-first-name").text
-                last_name = row.find_element_by_class_name("gb-last-name").text
+    index = 0
+    try: 
+        for row in rows:
+            columns = row.find_elements_by_css_selector("div.relative > span.gb-value")
+            try:
+                if (len(columns) > 0):
+                    last_name = ""
+                    try:
+                        last_name = row.find_element_by_class_name("gb-last-name").text
+                    except NoSuchElementException:
+                        print(colored('Done', 'green'))
+                        break
+                    full_name = last_name.lower()
+                    student_grade = 0
+                    
+                    print(last_name)
+                    try:
+                        student_grade = students_to_grades[full_name]
+                    except KeyError:
+                        print("Descrepancy for student", full_name, "- Student most likely has name that differs from Sakai to Zybooks")
+                        continue
+                    grade_cell = columns[assignment_index + 1]
+                    ActionChains(browser).click(grade_cell).send_keys(student_grade).send_keys(Keys.ENTER).perform()
+                    index += 1
+            except IndexError:
+              print(colored('Done', 'green'))
+    except StaleElementReferenceException: # We execute this block whenever the original find gets stale
+        fresh_rows = browser.find_elements_by_css_selector("tr")
+        skip_index = 0
+        for row in fresh_rows:
+            try:
+                if skip_index < index:
+                    skip_index += 1
+                    continue
+                columns = row.find_elements_by_css_selector("div.relative > span.gb-value")
+                last_name = ""
+                try:
+                    last_name = row.find_element_by_class_name("gb-last-name").text
+                except NoSuchElementException:
+                    print(colored('Done', 'green'))
+                    break
                 full_name = last_name.lower()
                 student_grade = 0
-                print(full_name)
                 try:
                     student_grade = students_to_grades[full_name]
                 except KeyError:
-                    print("Descrepancy for student", full_name, "- Student most likely has name that differs from Sakai to Zybooks")
-                    continue
-                print(full_name, ":", student_grade)
+                    error_string = "Descrepancy for student " + full_name + " - Student most likely has name that differs from Sakai to Zybooks"
+                    print(colored(error_string, 'red'))
                 grade_cell = columns[assignment_index + 1]
                 ActionChains(browser).click(grade_cell).send_keys(student_grade).send_keys(Keys.ENTER).perform()
-                time.sleep(1)
-        except IndexError:
-            break
-    print("Done")
+            except IndexError:
+                print(colored('Done', 'green'))
+        
+        
         
 def grade(browser, desired_class, assignment_num, students_to_grades):
     SAKAI_USERNAME = os.getenv("SAKAI_USERNAME")

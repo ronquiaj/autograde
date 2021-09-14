@@ -16,6 +16,7 @@ PATH = os.getenv("ASSIGNMENTS_PATH")
 desired_class = sys.argv[1]
 assignment_num = sys.argv[2]
 zybooks_link = sys.argv[3]
+section_num = sys.argv[4]
 
 # Configure download path
 chromeOptions = webdriver.ChromeOptions()
@@ -65,7 +66,7 @@ def configure_dropdowns(browser):
     click_in_dropdown(first_drop_down_options, assignment_num)
 
     students.click()
-    section2 = browser.find_elements_by_class_name("ember-power-select-option")[2]
+    section2 = browser.find_elements_by_class_name("ember-power-select-option")[int(section_num)]
     section2.click()
 
 """
@@ -90,7 +91,5 @@ students_to_grades = get_grades(assignment_num)
 print(students_to_grades)
 time.sleep(3)
 grade(browser, desired_class, assignment_num, students_to_grades)
-
-time.sleep(100000)
 
 browser.quit()
